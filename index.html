@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Understanding Statistical Analysis &amp; Hypothesis Testing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0B1220;overflow:hidden;font-family:Inter,Arial,sans-serif}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;display:none!important;overflow:hidden}
+.slide.active{display:var(--disp,block)!important}
+.slide h1,.slide h2,.slide h3,.slide p,.slide ul,.slide ol,.slide table{margin:0}
+.slide h1{font-size:96px;font-weight:600;line-height:1.1}
+.slide h2{font-size:64px;font-weight:600;line-height:1.15}
+.slide h3{font-size:44px;font-weight:600;line-height:1.2}
+.slide p{font-size:32px;line-height:1.4}
+.slide ul,.slide ol{padding-left:1.3em}
+.slide table{border-collapse:collapse;text-align:left;overflow:hidden}
+.slide th,.slide td{padding:.35em .6em;border-bottom:1px solid rgba(20,33,61,.12)}
+.slide th{font-weight:600}
+.slide.active [data-b]{animation:var(--a) .75s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d)}
+.slide.active [data-b="pop"]{animation-timing-function:cubic-bezier(.34,1.56,.64,1)}
+@keyframes b-fade{from{opacity:0}to{opacity:1}}
+@keyframes b-rise{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}}
+@keyframes b-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes b-left{from{opacity:0;transform:translateX(-90px)}to{opacity:1;transform:none}}
+@keyframes b-right{from{opacity:0;transform:translateX(90px)}to{opacity:1;transform:none}}
+@keyframes b-drop{from{opacity:0;transform:translateY(-48px)}to{opacity:1;transform:none}}
+@keyframes s-fade{from{opacity:0}to{opacity:1}}
+@keyframes s-push{from{transform:translateX(100%)}to{transform:none}}
+@keyframes s-pushback{from{transform:translateX(-100%)}to{transform:none}}
+html.still .slide,html.still .slide *{animation:none!important}
+#bar{position:fixed;left:0;top:0;height:4px;background:#F28C38;transition:width .5s ease;z-index:5}
+#count{position:fixed;right:18px;bottom:14px;color:rgba(247,245,239,.55);font:600 14px Inter,Arial,sans-serif;z-index:5}
+#hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(20,33,61,.9);color:#F7F5EF;font:14px Inter,Arial,sans-serif;padding:10px 18px;border-radius:999px;z-index:6;transition:opacity 1s ease}
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:40vh;overflow:auto;background:rgba(11,18,32,.96);color:#E6ECF4;font:18px/1.5 Inter,Arial,sans-serif;padding:20px 28px;z-index:7;display:none;border-top:3px solid #F28C38}
+#notes.on{display:block}
+#notes b{color:#F28C38}
+</style></head>
+<body>
+<div id="bar"></div>
+<div id="stage">
+<div class="slide" id="cover" data-transition="fade" style="background:radial-gradient(circle at 78% 45%, #24406E 0%, #14213D 62%);color:#F7F5EF;font-family:Inter, Arial, sans-serif;padding:128px">
+<iframe class="embed" data-embed="0" style="position:absolute;left:960px;top:128px;width:832px;height:824px;border:0;background:transparent" scrolling="no"></iframe>
+<p data-b="fade" data-o="1" style="position:absolute;left:128px;top:220px;width:760px;font-size:26px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#F28C38">CPEN 217 · Midterm 2</p>
+<h1 data-b="rise" data-o="2" style="position:absolute;left:128px;top:280px;width:800px;font-family:'Space Grotesk', Arial, sans-serif;font-size:92px;font-weight:700;line-height:1.05;color:#F7F5EF">Understanding Statistical Analysis</h1>
+<h2 data-b="rise" data-o="3" style="position:absolute;left:128px;top:590px;width:800px;font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:500;line-height:1.1;color:#F28C38">&amp; Hypothesis Testing</h2>
+<p data-b="fade" data-o="4" style="position:absolute;left:128px;top:700px;width:760px;font-size:32px;line-height:1.4;color:#C9D6E8">From data and probability to statistical decisions</p>
+<p data-b="fade" data-o="5" style="position:absolute;left:128px;top:850px;width:760px;font-size:24px;line-height:1.4;color:#9FB2CC">Somaya Bakir · Shifa Anwar<br>Hamad Bin Khalifa University · October 2026</p>
+
+</div>
+<div class="slide" id="branches" data-transition="push" style="background:#F7F5EF;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">What statistical analysis does</h2>
+<div data-b="left" data-o="1" style="position:absolute;left:128px;top:280px;width:800px;display:flex;flex-direction:column;gap:18px;background:#FFFFFF;padding:40px;border:2px solid #DCE3EC;border-radius:24px;box-shadow:0px 12px 32px rgba(20,33,61,0.08)">
+<svg style="color:#1F6FA8;width:60px;height:60px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16V7"/></svg>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#14213D">Descriptive statistics</h3>
+<p style="font-size:30px;line-height:1.4;color:#3D4A5C">Summarises the data actually collected: centre, spread and shape.</p>
+<p style="font-size:26px;font-weight:600;color:#1F6FA8">Mean · Median · SD · IQR · Graphs</p>
+</div>
+<div data-b="right" data-o="2" style="position:absolute;left:992px;top:280px;width:800px;display:flex;flex-direction:column;gap:18px;background:#FFFFFF;padding:40px;border:2px solid #DCE3EC;border-radius:24px;box-shadow:0px 12px 32px rgba(20,33,61,0.08)">
+<svg style="color:#C2410C;width:60px;height:60px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#14213D">Inferential statistics</h3>
+<p style="font-size:30px;line-height:1.4;color:#3D4A5C">Uses a sample to estimate or test claims about a larger population.</p>
+<p style="font-size:26px;font-weight:600;color:#C2410C">Confidence intervals · Hypothesis tests</p>
+</div>
+<p data-b="pop" data-o="3" style="position:absolute;left:128px;top:700px;width:420px;font-size:30px;font-weight:600;text-align:center;background:#14213D;color:#F7F5EF;padding:22px;border-radius:999px">Population · μ</p>
+<svg class="conn" data-b="fade" data-o="4" viewBox="0 0 1920 1080" style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none"><line x1="560.0" y1="742.0" x2="719.0" y2="742.0" stroke="#F28C38" stroke-width="6.0" stroke-linecap="round"/><polygon points="740.0,742.0 719.0,729.4 719.0,754.6" fill="#F28C38"/></svg>
+<p data-b="pop" data-o="5" style="position:absolute;left:750px;top:700px;width:420px;font-size:30px;font-weight:600;text-align:center;background:#1F6FA8;color:#F7F5EF;padding:22px;border-radius:999px">Sample · x̄</p>
+<svg class="conn" data-b="fade" data-o="6" viewBox="0 0 1920 1080" style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none"><line x1="1182.0" y1="742.0" x2="1341.0" y2="742.0" stroke="#F28C38" stroke-width="6.0" stroke-linecap="round"/><polygon points="1362.0,742.0 1341.0,729.4 1341.0,754.6" fill="#F28C38"/></svg>
+<p data-b="pop" data-o="7" style="position:absolute;left:1372px;top:700px;width:420px;font-size:30px;font-weight:600;text-align:center;background:#F28C38;color:#14213D;padding:22px;border-radius:999px">Inference</p>
+<p data-b="rise" data-o="8" style="position:absolute;left:128px;top:830px;width:1664px;font-size:30px;line-height:1.4;text-align:center;color:#3D4A5C">A <b>parameter</b> describes the population; a <b>statistic</b> is computed from the sample. <span style="color:#C2410C">No method can make poor data reliable.</span></p>
+
+</div>
+<div class="slide" id="data" data-transition="fade" style="background:#EAF0F6;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">Data, sampling and study design</h2>
+<div data-b="pop" data-o="1" style="position:absolute;left:128px;top:270px;width:392px;display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:30px;border-radius:20px;border-top:6px solid #1F6FA8">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;color:#1F6FA8">Nominal</h3>
+<p style="font-size:26px;line-height:1.35;color:#3D4A5C">Unordered categories</p>
+<p style="font-size:24px;color:#14213D;font-style:italic">Department, pass/fail</p>
+</div>
+<div data-b="pop" data-o="2" style="position:absolute;left:552px;top:270px;width:392px;display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:30px;border-radius:20px;border-top:6px solid #1F6FA8">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;color:#1F6FA8">Ordinal</h3>
+<p style="font-size:26px;line-height:1.35;color:#3D4A5C">Ordered categories</p>
+<p style="font-size:24px;color:#14213D;font-style:italic">Low / medium / high</p>
+</div>
+<div data-b="pop" data-o="3" style="position:absolute;left:976px;top:270px;width:392px;display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:30px;border-radius:20px;border-top:6px solid #C2410C">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;color:#C2410C">Discrete</h3>
+<p style="font-size:26px;line-height:1.35;color:#3D4A5C">Countable numbers</p>
+<p style="font-size:24px;color:#14213D;font-style:italic">Failed packets</p>
+</div>
+<div data-b="pop" data-o="4" style="position:absolute;left:1400px;top:270px;width:392px;display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:30px;border-radius:20px;border-top:6px solid #C2410C">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;color:#C2410C">Continuous</h3>
+<p style="font-size:26px;line-height:1.35;color:#3D4A5C">Measured on a scale</p>
+<p style="font-size:24px;color:#14213D;font-style:italic">Voltage, response time</p>
+</div>
+<div data-b="rise" data-o="5" style="position:absolute;left:128px;top:540px;width:528px;display:flex;flex-direction:column;gap:12px;background:#14213D;padding:32px;border-radius:20px">
+<svg style="color:#F28C38;width:48px;height:48px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#F7F5EF">Random sampling</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9D6E8">Supports generalising. Convenience samples are faster but less reliable.</p>
+</div>
+<div data-b="rise" data-o="6" style="position:absolute;left:696px;top:540px;width:528px;display:flex;flex-direction:column;gap:12px;background:#14213D;padding:32px;border-radius:20px">
+<svg style="color:#F28C38;width:48px;height:48px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#F7F5EF">Random assignment</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9D6E8">Supports causal claims. Observational data can hide confounders.</p>
+</div>
+<div data-b="rise" data-o="7" style="position:absolute;left:1264px;top:540px;width:528px;display:flex;flex-direction:column;gap:12px;background:#14213D;padding:32px;border-radius:20px">
+<svg style="color:#F28C38;width:48px;height:48px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#F7F5EF">Bias and dependence</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9D6E8">10 readings from 20 devices are not 200 independent devices.</p>
+</div>
+
+</div>
+<div class="slide" id="describe" data-transition="fade" style="background:#F7F5EF;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">Describing data: centre and spread</h2>
+<div data-b="rise" data-o="1" style="position:absolute;left:128px;top:290px;width:560px;display:flex;flex-direction:column;gap:8px;padding:8px 0px 8px 28px;border-left:6px solid #C2410C">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#C2410C">Mean</h3>
+<p style="font-size:28px;line-height:1.4;color:#3D4A5C">Uses every value. For 8, 9, 10, 10, 11, 22 the mean is 11.67.</p>
+</div>
+<div data-b="rise" data-o="2" style="position:absolute;left:128px;top:500px;width:560px;display:flex;flex-direction:column;gap:8px;padding:8px 0px 8px 28px;border-left:6px solid #1F6FA8">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#1F6FA8">Median</h3>
+<p style="font-size:28px;line-height:1.4;color:#3D4A5C">The middle of the sorted data: 10. The extreme 22 barely affects it.</p>
+</div>
+<div data-b="rise" data-o="3" style="position:absolute;left:128px;top:710px;width:560px;display:flex;flex-direction:column;gap:8px;padding:8px 0px 8px 28px;border-left:6px solid #14213D">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#14213D">SD or IQR</h3>
+<p style="font-size:28px;line-height:1.4;color:#3D4A5C">Mean + SD for symmetric data; median + IQR (Q₃ − Q₁) when skewed.</p>
+</div>
+<iframe class="embed" data-embed="1" style="position:absolute;left:752px;top:270px;width:1040px;height:660px;border:0;background:transparent" scrolling="no"></iframe>
+
+</div>
+<div class="slide" id="normal" data-transition="push" style="background:#14213D;color:#F7F5EF;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#F28C38">The normal distribution</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#F7F5EF">The 68–95–99.7 rule</h2>
+<div data-b="pop" data-o="1" style="position:absolute;left:128px;top:330px;width:560px;display:flex;flex-direction:column;gap:4px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1.1;color:#F28C38">68%</p>
+<p style="font-size:28px;color:#C9D6E8">of values lie within ±1σ of the mean</p>
+</div>
+<div data-b="pop" data-o="2" style="position:absolute;left:128px;top:530px;width:560px;display:flex;flex-direction:column;gap:4px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1.1;color:#F28C38">95%</p>
+<p style="font-size:28px;color:#C9D6E8">lie within ±2σ</p>
+</div>
+<div data-b="pop" data-o="3" style="position:absolute;left:128px;top:730px;width:560px;display:flex;flex-direction:column;gap:4px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1.1;color:#F28C38">99.7%</p>
+<p style="font-size:28px;color:#C9D6E8">lie within ±3σ</p>
+</div>
+<iframe class="embed" data-embed="2" style="position:absolute;left:752px;top:292px;width:1040px;height:660px;border:0;background:transparent" scrolling="no"></iframe>
+<p data-b="fade" data-o="4" style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#9FB2CC">z = (x − μ) / σ measures distance from the mean in SDs · The rule describes individual measurements, not confidence intervals</p>
+
+</div>
+<div class="slide" id="hypotheses" data-transition="fade" style="background:#EAF0F6;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#C2410C">Hypothesis testing</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">State the question first</h2>
+<div data-b="left" data-o="1" style="position:absolute;left:128px;top:320px;width:800px;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:40px;border-radius:24px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1;color:#1F6FA8">H₀</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#14213D">Null hypothesis</h3>
+<p style="font-size:30px;line-height:1.4;color:#3D4A5C">The reference claim, e.g. a battery’s stated mean life.</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#1F6FA8;background:#EAF0F6;padding:16px 24px;border-radius:12px">μ = 12 hours</p>
+</div>
+<div data-b="right" data-o="2" style="position:absolute;left:992px;top:320px;width:800px;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:40px;border-radius:24px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1;color:#C2410C">Hₐ</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#14213D">Alternative hypothesis</h3>
+<p style="font-size:30px;line-height:1.4;color:#3D4A5C">The difference being investigated (two-sided here).</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#C2410C;background:#FBEDE2;padding:16px 24px;border-radius:12px">μ ≠ 12 hours</p>
+</div>
+<p data-b="rise" data-o="3" style="position:absolute;left:128px;top:790px;width:1664px;font-size:30px;line-height:1.4;background:#14213D;color:#F7F5EF;padding:32px 40px;border-radius:20px">A one-sided alternative (μ &lt; 12) must be chosen in advance. Picking the direction after seeing the data distorts the test.</p>
+
+</div>
+<div class="slide" id="steps" data-transition="push" style="background:#F7F5EF;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">The six steps of a valid test</h2>
+<div data-b="rise" data-o="1" style="position:absolute;left:128px;top:300px;width:254px;height:520px;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:28px;border-radius:22px;border-top:8px solid #1F6FA8;box-shadow:0px 10px 28px rgba(20,33,61,0.08)">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#1F6FA8">1</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.15;color:#14213D">Define</h3>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">The population, the parameter and the research question.</p>
+</div>
+<div data-b="rise" data-o="2" style="position:absolute;left:410px;top:300px;width:254px;height:520px;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:28px;border-radius:22px;border-top:8px solid #1F6FA8;box-shadow:0px 10px 28px rgba(20,33,61,0.08)">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#1F6FA8">2</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.15;color:#14213D">Hypotheses and α</h3>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">Write H₀ and Hₐ; set α (often 0.05) before analysis.</p>
+</div>
+<div data-b="rise" data-o="3" style="position:absolute;left:692px;top:300px;width:254px;height:520px;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:28px;border-radius:22px;border-top:8px solid #1F6FA8;box-shadow:0px 10px 28px rgba(20,33,61,0.08)">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#1F6FA8">3</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.15;color:#14213D">Choose a test</h3>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">Based on variable type and study design.</p>
+</div>
+<div data-b="rise" data-o="4" style="position:absolute;left:974px;top:300px;width:254px;height:520px;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:28px;border-radius:22px;border-top:8px solid #1F6FA8;box-shadow:0px 10px 28px rgba(20,33,61,0.08)">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#1F6FA8">4</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.15;color:#14213D">Check assumptions</h3>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">Independence, normality, equal variance or expected counts.</p>
+</div>
+<div data-b="rise" data-o="5" style="position:absolute;left:1256px;top:300px;width:254px;height:520px;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:28px;border-radius:22px;border-top:8px solid #1F6FA8;box-shadow:0px 10px 28px rgba(20,33,61,0.08)">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#1F6FA8">5</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.15;color:#14213D">Compute</h3>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">Get the statistic and p-value; compare p with α.</p>
+</div>
+<div data-b="rise" data-o="6" style="position:absolute;left:1538px;top:300px;width:254px;height:520px;display:flex;flex-direction:column;gap:14px;background:#14213D;padding:28px;border-radius:22px;border-top:8px solid #F28C38;box-shadow:0px 10px 28px rgba(20,33,61,0.18)">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#F28C38">6</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.15;color:#F7F5EF">Conclude</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9D6E8">In context, with effect size and limitations.</p>
+</div>
+<p data-b="fade" data-o="7" style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#3D4A5C">p ≤ α → reject H₀ (data are sufficiently incompatible with H₀) · p &gt; α → fail to reject H₀ (not proved true)</p>
+
+</div>
+<div class="slide" id="pvalue" data-transition="fade" style="background:#F7F5EF;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">The p-value, visualised</h2>
+<p data-b="rise" data-o="1" style="position:absolute;left:128px;top:280px;width:560px;font-size:28px;line-height:1.4;color:#3D4A5C">Assuming H₀ and the test’s assumptions, the probability of a result <b>at least as extreme</b> as ours.</p>
+<p data-b="rise" data-o="2" style="position:absolute;left:128px;top:470px;width:560px;font-size:28px;line-height:1.4;color:#14213D;background:#FBEDE2;padding:24px;border-radius:16px;border-left:8px solid #C2410C"><b>Not</b> the probability that H₀ is true, and <b>not</b> the size of an effect.</p>
+<p data-b="rise" data-o="3" style="position:absolute;left:128px;top:680px;width:560px;font-size:28px;line-height:1.4;color:#3D4A5C">Two-sided z = 2.00 → p ≈ 0.0455, past ±1.96: reject. Yet p = 0.055 would not be rejected, with similar evidence.</p>
+<iframe class="embed" data-embed="4" style="position:absolute;left:752px;top:270px;width:1040px;height:660px;border:0;background:transparent" scrolling="no"></iframe>
+
+</div>
+<div class="slide" id="errors" data-transition="push" style="background:#14213D;color:#F7F5EF;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#F7F5EF">Two ways to be wrong</h2>
+<p data-b="fade" data-o="1" style="position:absolute;left:560px;top:300px;width:600px;font-size:30px;font-weight:600;text-align:center;color:#C9D6E8">H₀ is actually true</p>
+<p data-b="fade" data-o="1" style="position:absolute;left:1192px;top:300px;width:600px;font-size:30px;font-weight:600;text-align:center;color:#C9D6E8">H₀ is actually false</p>
+<p data-b="fade" data-o="2" style="position:absolute;left:128px;top:440px;width:400px;font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.2;color:#F7F5EF">We reject H₀</p>
+<p data-b="fade" data-o="2" style="position:absolute;left:128px;top:670px;width:400px;font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.2;color:#F7F5EF">We fail to reject H₀</p>
+<div data-b="pop" data-o="3" style="position:absolute;left:560px;top:370px;width:600px;height:220px;display:flex;flex-direction:column;justify-content:center;gap:8px;background:#3A2A22;padding:32px;border:3px solid #F28C38;border-radius:20px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#F28C38">Type I error (α)</h3>
+<p style="font-size:28px;color:#F3D9C4">False positive: a “discovery” that isn’t real</p>
+</div>
+<div data-b="pop" data-o="4" style="position:absolute;left:1192px;top:370px;width:600px;height:220px;display:flex;flex-direction:column;justify-content:center;gap:8px;background:#1C3A5E;padding:32px;border:3px solid #4FA3D9;border-radius:20px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#8CC8EE">Correct ✓ Power (1 − β)</h3>
+<p style="font-size:28px;color:#C9D6E8">We detect a real effect</p>
+</div>
+<div data-b="pop" data-o="5" style="position:absolute;left:560px;top:622px;width:600px;height:220px;display:flex;flex-direction:column;justify-content:center;gap:8px;background:#1C3A5E;padding:32px;border:3px solid #4FA3D9;border-radius:20px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#8CC8EE">Correct decision</h3>
+<p style="font-size:28px;color:#C9D6E8">No effect, and we don’t claim one</p>
+</div>
+<div data-b="pop" data-o="6" style="position:absolute;left:1192px;top:622px;width:600px;height:220px;display:flex;flex-direction:column;justify-content:center;gap:8px;background:#3A2A22;padding:32px;border:3px solid #F28C38;border-radius:20px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#F28C38">Type II error (β)</h3>
+<p style="font-size:28px;color:#F3D9C4">False negative: we miss a real effect</p>
+</div>
+<p data-b="fade" data-o="7" style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#9FB2CC">P(Type I) = α · Power = 1 − β, and it grows with sample size, effect size and measurement precision</p>
+
+</div>
+<div class="slide" id="multiple" data-transition="fade" style="background:#14213D;color:#F7F5EF;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#F28C38">Multiple comparisons</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#F7F5EF">The multiple-testing trap</h2>
+<p data-b="pop" data-o="1" style="position:absolute;left:128px;top:320px;width:600px;font-family:'Space Grotesk', Arial, sans-serif;font-size:140px;font-weight:700;line-height:1;color:#F28C38">64.2%</p>
+<p data-b="rise" data-o="2" style="position:absolute;left:128px;top:480px;width:600px;font-size:28px;line-height:1.4;color:#C9D6E8">Chance of at least one false positive when 20 true nulls are each tested at α = 0.05</p>
+<p data-b="rise" data-o="3" style="position:absolute;left:128px;top:620px;width:600px;font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#F7F5EF;background:#1C3058;padding:20px 28px;border-radius:14px">1 − (1 − 0.05)²⁰ ≈ 0.642</p>
+<p data-b="rise" data-o="4" style="position:absolute;left:128px;top:760px;width:600px;font-size:28px;line-height:1.4;color:#F7F5EF">Report every planned comparison and consider adjustments.</p>
+<iframe class="embed" data-embed="5" style="position:absolute;left:800px;top:270px;width:992px;height:660px;border:0;background:transparent" scrolling="no"></iframe>
+
+</div>
+<div class="slide" id="fourtests" data-transition="push" style="background:#F7F5EF;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">Four major statistical tests</h2>
+<div data-b="pop" data-o="1" style="position:absolute;left:128px;top:270px;width:392px;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:32px;border-radius:22px;border-top:8px solid #1F6FA8;box-shadow:0px 10px 28px rgba(20,33,61,0.08)">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#1F6FA8">Z-test</h3>
+<p style="font-size:26px;line-height:1.35;color:#3D4A5C">A mean with known σ, or a proportion</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:600;color:#14213D;background:#EAF0F6;padding:14px 18px;border-radius:12px">z = (x̄ − μ₀) / (σ/√n)</p>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">μ₀ = 100 h, x̄ = 104, σ = 12, n = 36 → z = 2.00, p ≈ 0.046: <b>reject</b></p>
+</div>
+<div data-b="pop" data-o="2" style="position:absolute;left:552px;top:270px;width:392px;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:32px;border-radius:22px;border-top:8px solid #1F6FA8;box-shadow:0px 10px 28px rgba(20,33,61,0.08)">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#1F6FA8">T-test</h3>
+<p style="font-size:26px;line-height:1.35;color:#3D4A5C">Means with σ estimated; one-sample, paired or Welch</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:600;color:#14213D;background:#EAF0F6;padding:14px 18px;border-radius:12px">t = (x̄ − μ₀) / (s/√n)</p>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">x̄ = 52, s = 4, n = 16, μ₀ = 50 → t(15) = 2.00, p ≈ 0.064: <b>fail to reject</b></p>
+</div>
+<div data-b="pop" data-o="3" style="position:absolute;left:976px;top:270px;width:392px;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:32px;border-radius:22px;border-top:8px solid #C2410C;box-shadow:0px 10px 28px rgba(20,33,61,0.08)">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#C2410C">Chi-square</h3>
+<p style="font-size:26px;line-height:1.35;color:#3D4A5C">Categorical counts: goodness of fit or independence</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:600;color:#14213D;background:#FBEDE2;padding:14px 18px;border-radius:12px">χ² = Σ (O − E)² / E</p>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">2 × 2 table, every E = 25 → χ² = 4.00, p ≈ 0.046; Cramér’s V = 0.20</p>
+</div>
+<div data-b="pop" data-o="4" style="position:absolute;left:1400px;top:270px;width:392px;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:32px;border-radius:22px;border-top:8px solid #C2410C;box-shadow:0px 10px 28px rgba(20,33,61,0.08)">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#C2410C">ANOVA</h3>
+<p style="font-size:26px;line-height:1.35;color:#3D4A5C">Three or more independent group means</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:600;color:#14213D;background:#FBEDE2;padding:14px 18px;border-radius:12px">F = MS between / MS within</p>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">Means 70, 75, 80 → F(2, 27) ≈ 6.94, p ≈ 0.004; η² ≈ 0.34</p>
+</div>
+<p data-b="rise" data-o="5" style="position:absolute;left:128px;top:790px;width:1664px;font-size:30px;line-height:1.4;background:#14213D;color:#F7F5EF;padding:28px 40px;border-radius:20px">Same idea every time: how far the data sit from H₀, relative to the variation expected by chance.</p>
+
+</div>
+<div class="slide" id="example" data-transition="fade" style="background:#14213D;color:#F7F5EF;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#F7F5EF">Same statistic, different verdict</h2>
+<div data-b="left" data-o="1" style="position:absolute;left:128px;top:270px;width:640px;display:flex;flex-direction:column;gap:10px;background:#1C3058;padding:32px;border-radius:22px;border-left:8px solid #F28C38">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;color:#F28C38">Z-test · σ known</h3>
+<p style="font-size:28px;line-height:1.4;color:#F7F5EF">z = 2.00, n = 36 → p ≈ 0.0455</p>
+<p style="font-size:28px;line-height:1.4;color:#C9D6E8">Reject H₀: μ = 100 h. The 95% CI [100.08, 107.92] just excludes 100.</p>
+</div>
+<div data-b="left" data-o="2" style="position:absolute;left:128px;top:550px;width:640px;display:flex;flex-direction:column;gap:10px;background:#1C3058;padding:32px;border-radius:22px;border-left:8px solid #4FA3D9">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;color:#8CC8EE">T-test · σ estimated</h3>
+<p style="font-size:28px;line-height:1.4;color:#F7F5EF">t = 2.00, df = 15 → p ≈ 0.064</p>
+<p style="font-size:28px;line-height:1.4;color:#C9D6E8">Fail to reject H₀: μ = 50. The 95% CI [49.87, 54.13] includes 50.</p>
+</div>
+<iframe class="embed" data-embed="6" style="position:absolute;left:832px;top:270px;width:960px;height:560px;border:0;background:transparent" scrolling="no"></iframe>
+<p data-b="rise" data-o="3" style="position:absolute;left:128px;top:850px;width:1664px;font-size:26px;line-height:1.4;color:#C9D6E8">Why? Estimating σ from only 16 values gives the t distribution heavier tails, so the same 2.00 is less surprising.</p>
+
+</div>
+<div class="slide" id="tests" data-transition="push" style="background:#F7F5EF;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">Selecting a test</h2>
+<table data-b="rise" data-o="1" style="position:absolute;left:128px;top:270px;width:1664px;font-family:Inter, Arial, sans-serif;font-size:28px;color:#14213D">
+<tr style="background:#14213D"><th style="width:55%;color:#F7F5EF">Research question</th><th style="width:45%;color:#F28C38">Initial choice</th></tr>
+<tr style="background:#FFFFFF"><td>One mean, known population σ</td><td>One-sample z-test</td></tr>
+<tr style="background:#EEF2F7"><td>One mean, unknown σ</td><td>One-sample t-test</td></tr>
+<tr style="background:#FFFFFF"><td>Two independent means</td><td>Welch t-test</td></tr>
+<tr style="background:#EEF2F7"><td>Before/after paired values</td><td>Paired t-test</td></tr>
+<tr style="background:#FFFFFF"><td>Two categorical variables</td><td>Chi-square independence / exact test</td></tr>
+<tr style="background:#EEF2F7"><td>Observed counts vs stated probabilities</td><td>Chi-square goodness-of-fit</td></tr>
+<tr style="background:#FFFFFF"><td>Three or more group means</td><td>One-way ANOVA / Welch ANOVA</td></tr>
+</table>
+<p data-b="rise" data-o="2" style="position:absolute;left:128px;top:800px;width:1664px;font-size:28px;line-height:1.4;color:#14213D;background:#FBEDE2;padding:24px 32px;border-radius:16px;border-left:8px solid #C2410C">The choice starts with the type of outcome and whether observations are independent.</p>
+
+</div>
+<div class="slide" id="reporting" data-transition="fade" style="background:#EAF0F6;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">Reporting a result</h2>
+<div data-b="left" data-o="1" style="position:absolute;left:128px;top:280px;width:800px;display:flex;flex-direction:column;gap:20px;background:#14213D;padding:44px;border-radius:24px">
+<p style="font-size:26px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#F28C38">A complete result</p>
+<p style="font-size:30px;line-height:1.5;color:#F7F5EF">“A two-sided one-sample t-test did not find sufficient evidence that the mean score differed from 50, t(15) = 2.00, p = 0.064. The sample mean was 52, and the 95% CI was [49.87, 54.13].”</p>
+<p style="font-size:24px;line-height:1.4;color:#9FB2CC">Test · n · statistic · df · p-value · direction · CI or effect size</p>
+</div>
+<h3 data-b="fade" data-o="2" style="position:absolute;left:992px;top:280px;width:800px;font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#C2410C">Three common errors</h3>
+<div data-b="right" data-o="3" style="position:absolute;left:992px;top:370px;width:800px;display:flex;flex-direction:row;align-items:center;gap:24px;background:#FFFFFF;padding:28px 32px;border-radius:20px">
+<svg style="color:#C2410C;width:48px;height:48px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+<p style="font-size:28px;line-height:1.4;color:#14213D">Reading p as the probability that H₀ is true</p>
+</div>
+<div data-b="right" data-o="4" style="position:absolute;left:992px;top:530px;width:800px;display:flex;flex-direction:row;align-items:center;gap:24px;background:#FFFFFF;padding:28px 32px;border-radius:20px">
+<svg style="color:#C2410C;width:48px;height:48px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+<p style="font-size:28px;line-height:1.4;color:#14213D">Changing the alternative after seeing the outcome</p>
+</div>
+<div data-b="right" data-o="5" style="position:absolute;left:992px;top:690px;width:800px;display:flex;flex-direction:row;align-items:center;gap:24px;background:#FFFFFF;padding:28px 32px;border-radius:20px">
+<svg style="color:#C2410C;width:48px;height:48px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+<p style="font-size:28px;line-height:1.4;color:#14213D">Treating repeated measurements as independent</p>
+</div>
+<p data-b="rise" data-o="6" style="position:absolute;left:128px;top:860px;width:1664px;font-size:26px;color:#3D4A5C">Never say the null was “proved”, and never present an association as causation.</p>
+
+</div>
+<div class="slide" id="references" data-transition="fade" style="background:#F7F5EF;color:#14213D;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;color:#14213D">References</h2>
+<ol style="font-size:26px;line-height:1.5;color:#3D4A5C">
+<li>OpenStax (2023). Introductory Statistics 2e. Rice University.</li>
+<li>Penn State University. STAT 500, Lesson 6: Hypothesis Testing.</li>
+<li>Penn State University. STAT 500, Lesson 8: Chi-Square Test for Independence.</li>
+<li>Penn State University. STAT 500, Lesson 10: Introduction to ANOVA.</li>
+<li>Wasserstein, R. L., &amp; Lazar, N. A. (2016). The ASA statement on p-values. The American Statistician, 70(2), 129–133.</li>
+<li>NIST/SEMATECH. e-Handbook of Statistical Methods.</li>
+<li>OpenStax (2023). Introductory Statistics 2e, Section 7.1: The central limit theorem for sample means.</li>
+</ol>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6577">All numerical examples are constructed for explanation, not results of an actual survey or experiment.</p>
+
+</div>
+</div>
+<div id="count"></div>
+<div id="notes"></div>
+<div id="hint">← → or click to move · F full screen · N speaker notes</div>
+<script>
+if(location.search.includes('still'))document.documentElement.classList.add('still');
+const EMBEDS=["<!doctype html><meta charset='utf-8'><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{width:100%;height:100%;display:block}<\/style><canvas id=\"c\"><\/canvas><script>\nvar c=document.getElementById('c'),g=c.getContext('2d'),S=2,W,H;\nfunction rs(){W=c.width=c.clientWidth*S;H=c.height=c.clientHeight*S;}rs();window.onresize=rs;\nvar B=29,N=650,R=3.2,peak=N*0.3989*(2*R/B),bins,balls,spawned,hold,alpha;\nfunction reset(){bins=[];for(var i=0;i< B;i++)bins.push(0);balls=[];spawned=0;hold=0;alpha=1;}reset();\nfunction gz(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(6.2832*v);}\nfunction frame(now){\ng.clearRect(0,0,W,H);var bw=W/B,base=H*0.97,mh=H*0.6;g.globalAlpha=alpha;\ng.fillStyle='rgba(247,245,239,0.28)';\nfor(var r=0;r< 6;r++){for(var k=0;k<=r;k++){g.beginPath();g.arc(W/2+(k-r/2)*bw*1.3,H*0.08+r*H*0.04,3.5*S,0,7);g.fill();}}\nfor(var i=0;i< B;i++){var h=bins[i]/peak*mh;if(h>0){var gr=g.createLinearGradient(0,base-h,0,base);gr.addColorStop(0,'#5BB0E6');gr.addColorStop(1,'rgba(91,176,230,0.2)');g.fillStyle=gr;g.fillRect(i*bw+3*S,base-h,bw-6*S,h);}}\ng.beginPath();for(var j=0;j<=240;j++){var z=-R+2*R*j/240,px=j/240*W,py=base-mh*Math.exp(-z*z/2);if(j)g.lineTo(px,py);else g.moveTo(px,py);}\ng.strokeStyle='#F28C38';g.lineWidth=4*S;g.setLineDash([14*S,10*S]);g.lineDashOffset=-now/25;g.stroke();g.setLineDash([]);\nif(spawned< N){for(var q=0;q< 3;q++){var zz=gz();if(Math.abs(zz)< R){balls.push({b:Math.min(B-1,Math.floor((zz+R)/(2*R)*B)),t:0,sp:0.013+Math.random()*0.01});spawned++;}}}\ng.fillStyle='#F7F5EF';var keep=[];\nfor(var n=0;n< balls.length;n++){var o=balls[n];o.t+=o.sp;var tx=(o.b+0.5)*bw,top=base-bins[o.b]/peak*mh,y0=H*0.04,e=Math.min(1,o.t*1.4),x=W/2+(tx-W/2)*(1-Math.pow(1-e,3)),y=y0+(top-y0)*o.t*o.t;\nif(o.t>=1){bins[o.b]++;}else{keep.push(o);g.beginPath();g.arc(x,y,5*S,0,7);g.fill();}}\nballs=keep;\nif(spawned>=N){if(balls.length==0){hold++;if(hold>120){alpha-=0.025;if(alpha<=0)reset();}}}\ng.globalAlpha=1;requestAnimationFrame(frame);}\nrequestAnimationFrame(frame);\n<\/script>", "<!doctype html><meta charset='utf-8'><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{width:100%;height:100%;display:block}<\/style><canvas id=\"c\"><\/canvas><script>\nvar c=document.getElementById('c'),g=c.getContext('2d'),S=2,W,H;\nfunction rs(){W=c.width=c.clientWidth*S;H=c.height=c.clientHeight*S;}rs();window.onresize=rs;\nvar pts=[],phase=0,last=0,mD=50,mdD=50,sdD=10,F='px Inter,Arial,sans-serif';\nfunction gz(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(6.2832*v);}\nfunction newSample(){pts=[];for(var i=0;i< 18;i++){var v=50+gz()*11;v=Math.max(14,Math.min(84,v));pts.push({v:v,x:50,y:Math.random(),a:0,o:0});}phase=0;}newSample();\nfunction X(v){return 50*S+(W-100*S)*v/100;}\nfunction st(){var n=pts.length,m=0,i;for(i=0;i< n;i++)m+=pts[i].v;m/=n;var s=pts.map(function(p){return p.v;}).sort(function(a,b){return a-b;});var md=n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;var q=0;for(i=0;i< n;i++)q+=(pts[i].v-m)*(pts[i].v-m);return {m:m,md:md,sd:Math.sqrt(q/(n-1))};}\nfunction vline(v,col,dash,lab,ly){var x=X(v);g.strokeStyle=col;g.lineWidth=4*S;g.setLineDash(dash);g.beginPath();g.moveTo(x,H*0.2);g.lineTo(x,H*0.66);g.stroke();g.setLineDash([]);g.fillStyle=col;g.font='600 '+(26*S)+F;g.textAlign='center';g.fillText(lab,x,ly);}\nfunction frame(now){\nif(!last)last=now;\nif(now-last>4500){last=now;if(phase==0){pts.push({v:97,x:97,y:0.45,a:0,o:1});phase=1;}else newSample();}\nvar s=st();mD+=(s.m-mD)*0.05;mdD+=(s.md-mdD)*0.05;sdD+=(s.sd-sdD)*0.05;\ng.clearRect(0,0,W,H);var ay=H*0.66;\ng.fillStyle='rgba(31,111,168,0.13)';g.fillRect(X(mD-sdD),H*0.2,X(mD+sdD)-X(mD-sdD),ay-H*0.2);\ng.fillStyle='#1F6FA8';g.font=(24*S)+F;g.textAlign='left';g.fillText('\u00b11 SD',X(mD+sdD)+8*S,H*0.25);\ng.strokeStyle='#3D4A5C';g.lineWidth=2*S;g.beginPath();g.moveTo(X(0),ay);g.lineTo(X(100),ay);g.stroke();\ng.fillStyle='#3D4A5C';g.font=(24*S)+F;g.textAlign='center';\nfor(var t=0;t<=100;t+=20){g.fillText(t,X(t),ay+38*S);g.fillRect(X(t)-S,ay,2*S,10*S);}\nfor(var i=0;i< pts.length;i++){var p=pts[i];p.x+=(p.v-p.x)*0.08;p.a=Math.min(1,p.a+0.04);var y=H*0.26+p.y*(ay-H*0.34);g.globalAlpha=p.a;g.fillStyle=p.o?'#F28C38':'#14213D';g.beginPath();g.arc(X(p.x),y,(p.o?14:10)*S,0,7);g.fill();}\ng.globalAlpha=1;\nvline(mD,'#C2410C',[],'mean',H*0.1);vline(mdD,'#1F6FA8',[12*S,8*S],'median',H*0.17);\ng.fillStyle='#14213D';g.font='600 '+(30*S)+F;g.textAlign='center';\ng.fillText('Mean '+mD.toFixed(1)+'     Median '+mdD.toFixed(1)+'     SD '+sdD.toFixed(1),W/2,H*0.84);\ng.fillStyle=phase?'#C2410C':'#3D4A5C';g.font=(26*S)+F;\ng.fillText(phase?'One outlier added: the mean jumps, the median barely moves':'A fresh random sample of 18 values',W/2,H*0.94);\nrequestAnimationFrame(frame);}\nrequestAnimationFrame(frame);\n<\/script>", "<!doctype html><meta charset='utf-8'>\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500..700&family=Inter:wght@400;600&display=swap\">\n<style>\n*{box-sizing:border-box}\nhtml,body{margin:0;height:100%;background:transparent;overflow:hidden;font-family:Inter,Arial,sans-serif;color:#F7F5EF}\nbody{display:flex;flex-direction:column;gap:14px}\n.row{display:flex;gap:32px}\n.f{flex:1;display:flex;flex-direction:column;gap:6px}\nlabel{font-size:22px;font-weight:600;color:#C9D6E8;letter-spacing:.5px}\ninput{width:100%;height:68px;font:700 38px 'Space Grotesk',Arial,sans-serif;color:#F7F5EF;background:rgba(255,255,255,.07);border:2px solid rgba(242,140,56,.55);border-radius:14px;padding:0 18px;outline:none;-moz-appearance:textfield;appearance:textfield}\ninput::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}\ninput::placeholder{color:rgba(201,214,232,.4);font-weight:500}\ninput:focus{border-color:#F28C38;background:rgba(242,140,56,.13);box-shadow:0 0 0 4px rgba(242,140,56,.25)}\ninput.bad{border-color:#E5604D;background:rgba(229,96,77,.14)}\nsvg{width:1040px;height:268px;display:block;flex:none}\nsvg text{font-family:Inter,Arial,sans-serif}\n.chip{flex:1;background:rgba(255,255,255,.06);border-radius:12px;padding:10px 18px;border-left:8px solid #F28C38}\n.chip .k{font-size:21px;font-weight:600;color:#C9D6E8}\n.chip .v{font:700 38px/1.2 'Space Grotesk',Arial,sans-serif;color:#F7F5EF}\n#z{background:rgba(91,176,230,.14);border-left:8px solid #5BB0E6;border-radius:12px;padding:12px 24px}\n#eq{font:700 38px/1.2 'Space Grotesk',Arial,sans-serif;color:#F7F5EF}\n#msg{font-size:26px;line-height:1.4;color:#C9D6E8;margin-top:2px}\n#msg b{color:#5BB0E6}\n<\/style>\n<div class=\"row\">\n<div class=\"f\"><label for=\"mu\">Mean (\u03bc)<\/label><input id=\"mu\" type=\"number\" step=\"any\" value=\"70\" placeholder=\"e.g. 70\"><\/div>\n<div class=\"f\"><label for=\"sd\">Standard deviation (\u03c3)<\/label><input id=\"sd\" type=\"number\" step=\"any\" value=\"10\" placeholder=\"e.g. 10\"><\/div>\n<div class=\"f\"><label for=\"x\">A student's score (x)<\/label><input id=\"x\" type=\"number\" step=\"any\" value=\"90\" placeholder=\"e.g. 90\"><\/div>\n<\/div>\n<svg id=\"s\" viewBox=\"0 0 1040 268\"><\/svg>\n<div class=\"row\">\n<div class=\"chip\" style=\"border-color:#F28C38\"><div class=\"k\">Within \u00b11\u03c3 \u00b7 68%<\/div><div class=\"v\" id=\"r1\"><\/div><\/div>\n<div class=\"chip\" style=\"border-color:#C9722E\"><div class=\"k\">Within \u00b12\u03c3 \u00b7 95%<\/div><div class=\"v\" id=\"r2\"><\/div><\/div>\n<div class=\"chip\" style=\"border-color:#8A6A4E\"><div class=\"k\">Within \u00b13\u03c3 \u00b7 99.7%<\/div><div class=\"v\" id=\"r3\"><\/div><\/div>\n<\/div>\n<div id=\"z\"><div id=\"eq\"><\/div><div id=\"msg\"><\/div><\/div>\n<script>\nvar BASE=200,PK=155;\nfunction $(i){return document.getElementById(i);}\nfunction X(z){return 520+z*135;}\nfunction Y(z){return BASE-PK*Math.exp(-z*z/2);}\nfunction band(m){var n=Math.round(m*40),d='M'+X(-m)+' '+BASE,i,z;for(i=0;i<=n;i++){z=-m+2*m*i/n;d+=' L'+X(z).toFixed(1)+' '+Y(z).toFixed(1);}return d+' L'+X(m)+' '+BASE+' Z';}\nfunction curve(){var d='',j,z;for(j=0;j<=288;j++){z=-3.6+7.2*j/288;d+=(j?' L':'M')+X(z).toFixed(1)+' '+Y(z).toFixed(1);}return d;}\nvar h='',k,SL=['\u22123\u03c3','\u22122\u03c3','\u22121\u03c3','\u03bc','+1\u03c3','+2\u03c3','+3\u03c3'];\nh+='<path d=\"'+band(3)+'\" fill=\"rgba(242,140,56,.22)\"/>';\nh+='<path d=\"'+band(2)+'\" fill=\"rgba(242,140,56,.42)\"/>';\nh+='<path d=\"'+band(1)+'\" fill=\"rgba(242,140,56,.85)\"/>';\nfor(k=-3;k<=3;k++){if(k)h+='<line x1=\"'+X(k)+'\" x2=\"'+X(k)+'\" y1=\"'+BASE+'\" y2=\"'+Y(k)+'\" stroke=\"rgba(247,245,239,.5)\" stroke-width=\"2\" stroke-dasharray=\"8 8\"/>';}\nh+='<path d=\"'+curve()+'\" fill=\"none\" stroke=\"#F7F5EF\" stroke-width=\"4\"/>';\nh+='<line x1=\"'+X(-3.6)+'\" x2=\"'+X(3.6)+'\" y1=\"'+BASE+'\" y2=\"'+BASE+'\" stroke=\"#C9D6E8\" stroke-width=\"2\"/>';\nfor(k=0;k<7;k++){\nh+='<text id=\"t'+k+'\" x=\"'+X(k-3)+'\" y=\"'+(BASE+32)+'\" text-anchor=\"middle\" font-size=\"26\" font-weight=\"600\" fill=\"#F7F5EF\"><\/text>';\nh+='<text x=\"'+X(k-3)+'\" y=\"'+(BASE+58)+'\" text-anchor=\"middle\" font-size=\"20\" fill=\"#9FB2CC\">'+SL[k]+'<\/text>';}\nh+='<g id=\"mk\" style=\"display:none\"><line id=\"ml\" y1=\"34\" y2=\"'+BASE+'\" stroke=\"#5BB0E6\" stroke-width=\"5\"/><circle id=\"mc\" r=\"10\" fill=\"#5BB0E6\" stroke=\"#14213D\" stroke-width=\"3\"/><text id=\"mt\" y=\"24\" font-size=\"28\" font-weight=\"700\" fill=\"#5BB0E6\" text-anchor=\"middle\"><\/text><\/g>';\n$('s').innerHTML=h;\nfunction num(id){var v=$(id).value.trim();return v===''?NaN:Number(v);}\nfunction fmt(n){return String(+n.toFixed(2)).replace('-','\u2212');}\nfunction upd(){\nvar m=num('mu'),s=num('sd'),x=num('x'),okM=isFinite(m),okS=isFinite(s)&&s>0,i;\n$('sd').className=(isFinite(s)&&s<=0)?'bad':'';\nfor(i=0;i<7;i++)$('t'+i).textContent=(okM&&okS)?fmt(m+(i-3)*s):(i==3&&okM?fmt(m):'');\nfor(i=1;i<=3;i++)$('r'+i).textContent=(okM&&okS)?fmt(m-i*s)+' to '+fmt(m+i*s):'\u2014';\nvar mk=$('mk'),eq=$('eq'),msg=$('msg');\nif(!okM||!okS){mk.style.display='none';eq.textContent='z = (x \u2212 \u03bc) / \u03c3';msg.textContent=(isFinite(s)&&s<=0)?'The standard deviation must be greater than 0.':'Type a mean and a standard deviation to begin.';return;}\nif(!isFinite(x)){mk.style.display='none';eq.textContent='z = (x \u2212 \u03bc) / \u03c3';msg.textContent='Type a score (x) to see its z-score.';return;}\nvar z=(x-m)/s,ar=+Math.abs(z).toFixed(2),zc=Math.max(-3.5,Math.min(3.5,z)),px=X(zc);\nmk.style.display='';\n$('ml').setAttribute('x1',px);$('ml').setAttribute('x2',px);\n$('mc').setAttribute('cx',px);$('mc').setAttribute('cy',Y(zc));\nvar mt=$('mt');mt.setAttribute('x',px);mt.setAttribute('text-anchor',px>930?'end':(px<110?'start':'middle'));\nmt.textContent='x = '+fmt(x)+(z>3.5?' \u25b8':(z<-3.5?' \u25c2':''));\neq.textContent='z = ('+fmt(x)+' \u2212 '+(m<0?'('+fmt(m)+')':fmt(m))+') / '+fmt(s)+' = '+(ar===0?'0.00':(z<0?'\u2212':'')+ar.toFixed(2));\nvar dir=z>0?'above':'below',t;\nif(ar===0){msg.innerHTML='<b>Exactly at the mean<\/b> \u00b7 the most typical value.';return;}\nif(ar<=1)t='typical, inside the middle 68% of values.';\nelse if(ar<=2)t=(ar===2?'right at the edge of the middle 95% of values.':'inside the middle 95% of values.');\nelse if(ar<=3)t='unusually '+(z>0?'high':'low')+': only about 5% of values lie beyond \u00b12\u03c3.';\nelse t='extremely '+(z>0?'high':'low')+': fewer than 0.3% of values lie beyond \u00b13\u03c3.';\nmsg.innerHTML='<b>'+ar.toFixed(2)+' SD'+(ar===1?'':'s')+' '+dir+' the mean<\/b> \u00b7 '+t;\n}\n['mu','sd','x'].forEach(function(id){var el=$(id);el.addEventListener('input',upd);el.addEventListener('focus',function(){var e=this;setTimeout(function(){e.select();},0);});});\ndocument.addEventListener('keydown',function(e){\nvar t=e.target;\nif(t&&t.tagName==='INPUT'){if(e.key==='Enter'||e.key==='Escape'){t.blur();}return;}\nif(['ArrowRight','ArrowDown','PageDown',' ','Enter','ArrowLeft','ArrowUp','PageUp','Backspace','Home','End','n','N'].indexOf(e.key)>-1){\ne.preventDefault();\ntry{parent.document.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,bubbles:true,cancelable:true}));}catch(err){}\n}});\nupd();\n<\/script>", "<!doctype html><meta charset='utf-8'><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{width:100%;height:100%;display:block}<\/style><canvas id=\"c\"><\/canvas><script>\nvar c=document.getElementById('c'),g=c.getContext('2d'),S=2,W,H,F='px Inter,Arial,sans-serif';\nfunction rs(){W=c.width=c.clientWidth*S;H=c.height=c.clientHeight*S;}rs();window.onresize=rs;\nfunction gz(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(6.2832*v);}\nvar rows=[],tot=0,cov=0,last=0,MU=50;\nfunction X(v){return W*0.06+W*0.88*(v-40)/20;}\nfunction sample(){var s=0,q=0,a=[],i;for(i=0;i< 25;i++){var v=MU+10*gz();a.push(v);s+=v;}var m=s/25;for(i=0;i< 25;i++)q+=(a[i]-m)*(a[i]-m);var h=2.064*Math.sqrt(q/24)/5;var hit=Math.abs(m-MU)<=h;if(tot>=200){tot=0;cov=0;}tot++;if(hit)cov++;rows.push({m:m,h:h,hit:hit,g:0});if(rows.length>20)rows.shift();}\nfunction frame(now){\nif(now-last>420){last=now;sample();}\ng.clearRect(0,0,W,H);\nvar top=H*0.14,bot=H*0.8,rh=(bot-top)/20;\ng.font=(24*S)+F;g.textAlign='left';g.fillStyle='#1F6FA8';g.fillText('\u2014 covers \u03bc',0,H*0.06);g.fillStyle='#C2410C';g.fillText('\u2014 misses \u03bc',190*S,H*0.06);\ng.strokeStyle='#14213D';g.lineWidth=3*S;g.setLineDash([10*S,8*S]);g.beginPath();g.moveTo(X(MU),top-10*S);g.lineTo(X(MU),bot+6*S);g.stroke();g.setLineDash([]);\ng.fillStyle='#14213D';g.textAlign='right';g.font='600 '+(24*S)+F;g.fillText('true \u03bc = 50',W,H*0.06);\nfor(var i=0;i< rows.length;i++){var r=rows[i];r.g=Math.min(1,r.g+0.07);var y=top+(i+0.5)*rh,col=r.hit?'#1F6FA8':'#C2410C';\ng.strokeStyle=col;g.lineWidth=(r.hit?6:8)*S;g.lineCap='round';g.beginPath();g.moveTo(X(r.m-r.h*r.g),y);g.lineTo(X(r.m+r.h*r.g),y);g.stroke();\ng.fillStyle=col;g.beginPath();g.arc(X(r.m),y,7*S,0,7);g.fill();}\ng.strokeStyle='#3D4A5C';g.lineWidth=2*S;g.beginPath();g.moveTo(X(40),bot+14*S);g.lineTo(X(60),bot+14*S);g.stroke();\ng.fillStyle='#3D4A5C';g.font=(24*S)+F;g.textAlign='center';for(var t=40;t<=60;t+=5)g.fillText(t,X(t),bot+48*S);\ng.fillStyle='#14213D';g.font='600 '+(30*S)+F;\ng.fillText('Intervals covering \u03bc: '+cov+' of '+tot+'  ('+Math.round(100*cov/Math.max(1,tot))+'%)',W/2,H*0.96);\nrequestAnimationFrame(frame);}\nrequestAnimationFrame(frame);\n<\/script>", "<!doctype html><meta charset='utf-8'><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{width:100%;height:100%;display:block}<\/style><canvas id=\"c\"><\/canvas><script>\nvar c=document.getElementById('c'),g=c.getContext('2d'),S=2,W,H,F='px Inter,Arial,sans-serif';\nfunction rs(){W=c.width=c.clientWidth*S;H=c.height=c.clientHeight*S;}rs();window.onresize=rs;\nfunction erf(x){var s=x< 0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}\nfunction Phi(z){return 0.5*(1+erf(z/Math.SQRT2));}\nfunction X(z){return W/2+z*W*0.135;}\nfunction frame(now){\nvar base=H*0.8,mh=H*0.5;function Y(z){return base-mh*Math.exp(-z*z/2);}\nvar zt=1.65-1.65*Math.cos(now/2300),p=2*(1-Phi(zt)),rej=p<=0.05;\ng.clearRect(0,0,W,H);\ng.fillStyle=rej?'rgba(194,65,12,0.5)':'rgba(31,111,168,0.35)';\nfor(var side=-1;side<=1;side+=2){g.beginPath();g.moveTo(X(side*zt),base);for(var z=zt;z<=3.6;z+=0.02)g.lineTo(X(side*z),Y(z));g.lineTo(X(side*3.6),base);g.closePath();g.fill();}\ng.beginPath();for(var j=0;j<=300;j++){var zz=-3.6+7.2*j/300;if(j)g.lineTo(X(zz),Y(zz));else g.moveTo(X(zz),Y(zz));}\ng.strokeStyle='#14213D';g.lineWidth=5*S;g.stroke();\ng.strokeStyle='#8A96A8';g.lineWidth=2*S;g.setLineDash([10*S,8*S]);\nfor(var s2=-1;s2<=1;s2+=2){g.beginPath();g.moveTo(X(s2*1.96),base);g.lineTo(X(s2*1.96),base-mh*0.75);g.stroke();}\ng.setLineDash([]);\ng.fillStyle='#5A6577';g.font=(24*S)+F;g.textAlign='center';\ng.fillText('\u22121.96',X(-1.96),base-mh*0.8);g.fillText('+1.96',X(1.96),base-mh*0.8);\ng.strokeStyle='#3D4A5C';g.lineWidth=2*S;g.beginPath();g.moveTo(X(-3.6),base);g.lineTo(X(3.6),base);g.stroke();\ng.fillStyle='#3D4A5C';for(var t=-3;t<=3;t++)g.fillText(t,X(t),base+40*S);\nvar col=rej?'#C2410C':'#1F6FA8';\ng.strokeStyle=col;g.lineWidth=5*S;g.beginPath();g.moveTo(X(zt),base);g.lineTo(X(zt),base-mh*1.05);g.stroke();\ng.fillStyle=col;g.font='600 '+(28*S)+F;g.fillText('z = '+zt.toFixed(2),X(zt),base-mh*1.1);\ng.textAlign='left';g.font='700 '+(56*S)+F;g.fillStyle='#14213D';g.fillText('p = '+p.toFixed(3),20*S,H*0.1);\nvar msg=rej?'p \u2264 0.05 \u2192 reject H\u2080':'p > 0.05 \u2192 fail to reject H\u2080';\ng.font='600 '+(28*S)+F;var w=g.measureText(msg).width+48*S;\ng.fillStyle=col;g.fillRect(W-w-20*S,H*0.035,w,60*S);g.fillStyle='#F7F5EF';g.textAlign='center';g.fillText(msg,W-w/2-20*S,H*0.035+40*S);\nrequestAnimationFrame(frame);}\nrequestAnimationFrame(frame);\n<\/script>", "<!doctype html><meta charset='utf-8'><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{width:100%;height:100%;display:block}<\/style><canvas id=\"c\"><\/canvas><script>\nvar c=document.getElementById('c'),g=c.getContext('2d'),S=2,W,H,F='px Inter,Arial,sans-serif';\nfunction rs(){W=c.width=c.clientWidth*S;H=c.height=c.clientHeight*S;}rs();window.onresize=rs;\nvar tiles=[],round=0,hits=0,last=-99999,flip=0;\nfunction newRound(){if(round>=100){round=0;hits=0;}tiles=[];var any=0;for(var i=0;i< 20;i++){var p=Math.random();if(p<=0.05)any=1;tiles.push(p);}round++;if(any)hits++;flip=0;}\nfunction frame(now){\nif(now-last>1900){last=now;newRound();}\nflip=Math.min(1,flip+0.035);\ng.clearRect(0,0,W,H);\nvar gap=14*S,y0=0,ah=H*0.78,tw=(W-4*gap)/5,th=(ah-3*gap)/4;\nfor(var i=0;i< 20;i++){var p=tiles[i],cx=(i%5)*(tw+gap)+tw/2,cy=y0+Math.floor(i/5)*(th+gap)+th/2;\nvar sc=Math.max(0,Math.min(1,flip*2.2-i*0.06)),fp=p<=0.05,hh=th*sc;\ng.fillStyle=fp?'#F28C38':'#24406E';\nif(fp){g.shadowColor='rgba(242,140,56,0.8)';g.shadowBlur=30*S;}\ng.fillRect(cx-tw/2,cy-hh/2,tw,hh);g.shadowBlur=0;\nif(sc>0.7){g.textAlign='center';g.fillStyle=fp?'#14213D':'#C9D6E8';g.font='600 '+(30*S)+F;g.fillText('p = '+p.toFixed(2),cx,cy+(fp?-4*S:10*S));\nif(fp){g.font='600 '+(24*S)+F;g.fillText('false positive',cx,cy+32*S);}}}\ng.textAlign='center';g.fillStyle='#F7F5EF';g.font='600 '+(30*S)+F;\ng.fillText('Rounds with at least one false positive: '+hits+' of '+round+'  ('+Math.round(100*hits/Math.max(1,round))+'%)',W/2,H*0.88);\ng.fillStyle='#9FB2CC';g.font=(24*S)+F;g.fillText('Each round: 20 tests where every null hypothesis is true',W/2,H*0.97);\nrequestAnimationFrame(frame);}\nrequestAnimationFrame(frame);\n<\/script>", "<!doctype html><meta charset='utf-8'><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{width:100%;height:100%;display:block}<\/style><canvas id=\"c\"><\/canvas><script>\nvar c=document.getElementById('c'),g=c.getContext('2d'),S=2,W,H,F='px Inter,Arial,sans-serif';\nfunction rs(){W=c.width=c.clientWidth*S;H=c.height=c.clientHeight*S;}rs();window.onresize=rs;\nfunction cl(x){return Math.max(0,Math.min(1,x));}\nfunction ease(x){return 1-Math.pow(1-x,3);}\nfunction band(y,lo,hi,ref,est,a,b,lab,col,verdict,k,pulse){\nfunction X(v){return W*0.05+W*0.9*(v-a)/(b-a);}\ng.textAlign='left';g.fillStyle='#F7F5EF';g.font='600 '+(28*S)+F;g.fillText(lab,0,y-140*S);\ng.strokeStyle='#C9D6E8';g.lineWidth=2*S;g.beginPath();g.moveTo(X(a),y);g.lineTo(X(b),y);g.stroke();\ng.fillStyle='#C9D6E8';g.font=(24*S)+F;g.textAlign='center';\nfor(var t=a;t<=b;t+=2){g.fillRect(X(t)-S,y,2*S,10*S);g.fillText(t,X(t),y+38*S);}\ng.strokeStyle='rgba(247,245,239,'+(0.6+0.4*pulse)+')';g.lineWidth=(3+3*pulse)*S;g.setLineDash([10*S,8*S]);g.beginPath();g.moveTo(X(ref),y-105*S);g.lineTo(X(ref),y);g.stroke();g.setLineDash([]);\ng.fillStyle='#F7F5EF';g.font=(24*S)+F;g.fillText('H\u2080: '+ref,X(ref),y-114*S);\nif(k>0){g.strokeStyle=col;g.lineWidth=16*S;g.lineCap='round';g.beginPath();g.moveTo(X(est-(est-lo)*k),y-55*S);g.lineTo(X(est+(hi-est)*k),y-55*S);g.stroke();\ng.fillStyle='#F7F5EF';g.beginPath();g.arc(X(est),y-55*S,10*S,0,7);g.fill();}\nif(k>=1){g.fillStyle=col;g.font='600 '+(28*S)+F;g.textAlign='right';g.fillText(verdict,W,y-140*S);}}\nfunction frame(now){\nvar u=(now%7000)/7000,k1=ease(cl(u*3)),k2=ease(cl(u*3-1)),pl=0.5+0.5*Math.sin(now/250);\ng.clearRect(0,0,W,H);\nband(H*0.4,100.08,107.92,100,104,96,110,'z-test CI','#F28C38','Excludes 100 \u2192 reject',k1,k1>=1?pl:0);\nband(H*0.88,49.87,54.13,50,52,46,56,'t-test CI','#4FA3D9','Includes 50 \u2192 fail to reject',k2,k2>=1?pl:0);\nrequestAnimationFrame(frame);}\nrequestAnimationFrame(frame);\n<\/script>"];
+const NOTES=["Welcome. The animation on the right is random samples falling into bins: each one is unpredictable, but together they build the bell curve. That tension between randomness and pattern is what statistics is about. Our talk follows the report: data, description, probability, hypothesis testing, four major tests, and how to report a result.", "Key terms from section 1: the population is every unit of interest (every student in a course), the sample is the units we actually observe (say 60 students), the parameter is the true population value such as \u03bc, and the statistic is what we compute, such as x\u0304. A result needs context: a voluntary sample might be precise but unrepresentative. And the statistical question comes first: define the outcome, population and comparison before choosing a test.", "Variable type decides which summaries and tests make sense. Interval data, like Celsius, have meaningful differences but no true zero; ratio data, like duration, have a true zero. Sampling: simple random, stratified within subgroups, or cluster sampling of groups like classrooms. Watch for selection bias, measurement error and systematically missing values. Cleaning means checking and documenting, not deleting inconvenient observations. Repeated measurements from the same device are correlated, so a paired or repeated-measures method may be needed.", "From the report: the mean uses all values, the median marks the middle and the mode is the most frequent value, useful for categories. Graphs: bar charts compare categories, histograms show the shape of numerical data, box plots show the median, quartiles and values beyond the 1.5 \u00d7 IQR fences, and scatter plots show relationships. An outlier must be investigated, never automatically removed. Watch the live dot plot: every few seconds an outlier (orange) is added. The mean line jumps toward it while the median hardly moves, which is why the median is preferred for skewed data like incomes. The shaded band is one standard deviation either side of the mean.", "Interactive slide: click a box and type your own mean, standard deviation and score; everything updates instantly (it starts on the exam example: mean 70, SD 10, score 90). Moving on, we have the normal distribution, one of the most important distributions in statistics. It is a symmetric, bell-shaped curve where most observations are concentrated around the mean. One important property we both found while researching is the 68-95-99.7 rule, also known as the empirical rule. It helps us understand how data is spread around the average using the standard deviation: approximately 68% of values fall within one standard deviation of the mean, 95% within two, and 99.7% within three. For example, imagine the average exam grade is 70 and the standard deviation is 10. Then about 68% of students score between 60 and 80, within one standard deviation; around 95% score between 50 and 90, within two; and almost all students, about 99.7%, score between 40 and 100, within three. We can also use a z-score to measure how far a particular value is from the mean. If a student scores 90, the z-score is 2, because 90 is two standard deviations above the average of 70. This is important because it helps us see where most values are located and identify values that are unusually high or low.", "H\u2080 gives the reference claim and H\u2090 the difference we investigate. Like a courtroom, we start by presuming H\u2080 and ask whether the evidence is strong enough to reject it. We never prove H\u2080; we only gather evidence against it.", "These are the six steps from section 5.3 of the report. Stress step 2: \u03b1 is chosen before looking at the data. And step 6: a conclusion is more than \u201creject\u201d or \u201cfail to reject\u201d; it should be stated in context with an effect size and the study\u2019s limitations.", "For a two-sided test both tails count. The shaded probability is computed assuming the null model, so z = 2 does not mean a 4.55% chance that H\u2080 is true. Near the 0.05 cut-off, a confidence interval and effect size are more informative than a bare reject / fail-to-reject decision. The animated test statistic slides back and forth. While it stays inside \u00b11.96 the two-tailed p-value is above 0.05 and the shading is blue. Once it crosses the dashed cut-offs, p drops below 0.05 and the decision flips to \u201creject H\u2080\u201d.", "Courtroom analogy: a Type I error convicts an innocent person; a Type II error lets a guilty one go free. Power is the probability of detecting a specified real effect. Statistical significance does not imply practical significance: a very large sample can make a trivial difference significant, so studies should name the smallest effect that would matter.", "Each round of the simulation runs 20 tests where nothing is going on. Under a true null the p-value is uniformly random, so each test has a 5% chance of a false alarm. Over many rounds about 64% contain at least one \u201csignificant\u201d result purely by chance. This does not mean 64% of the individual tests are wrong; it is why researchers report all planned comparisons and adjust when testing many outcomes.", "All four examples are the constructed examples from the report. Z-test: assumes known \u03c3 and an appropriate normal model. T-test: accounts for estimating \u03c3, with heavier tails; Welch\u2019s version does not need equal variances. Chi-square: needs independent observations and large enough expected counts; it shows association, not causation. ANOVA: avoids the inflated error from many t-tests; a significant F says some mean differs, and Tukey\u2019s method finds which pair.", "Both examples come from the report and both give a test statistic of exactly 2.00, yet the decisions differ. With \u03c3 known, z = 2.00 lies just beyond \u00b11.96. With \u03c3 estimated from 16 observations, the t(15) cut-off is wider, so p \u2248 0.064. The confidence intervals tell the same story: one barely excludes the reference value, the other includes it. Either way the evidence is borderline, which is why reporting the interval matters.", "This is the selection table from section 7 of the report. Start from the question and the data, not from a favourite test, and remember that each test has assumptions to check before trusting its p-value.", "This example paragraph is taken from section 7.1 of the report. It names the test, the statistic with degrees of freedom, the p-value, the estimate and the interval. Each of the three common errors changes the meaning of the reported test.", "Sources as listed in the written report."];
+const stage=document.getElementById('stage');
+const slides=[...stage.querySelectorAll('.slide')];
+slides.forEach(s=>{
+  const d=s.style.display; if(d){s.style.setProperty('--disp',d);s.style.removeProperty('display');}
+  s.querySelectorAll('[data-b]').forEach(el=>{
+    const o=+el.dataset.o||1;
+    el.style.setProperty('--a','b-'+el.dataset.b);
+    el.style.setProperty('--d',(0.35+(o-1)*0.38).toFixed(2)+'s');
+  });
+});
+function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform='translate(-50%,-50%) scale('+s+')';}
+addEventListener('resize',fit);fit();
+let cur=-1;
+function loadEmbeds(s,on){s.querySelectorAll('iframe.embed').forEach(f=>{if(on)f.srcdoc=EMBEDS[+f.dataset.embed];else f.removeAttribute('srcdoc');});}
+function show(i,dir){
+  i=Math.max(0,Math.min(slides.length-1,i)); if(i===cur)return;
+  const prev=slides[cur], next=slides[i];
+  let tr='fade';
+  if(prev){tr=(dir>0?prev:next).dataset.transition||'fade';prev.classList.remove('active');loadEmbeds(prev,false);}
+  next.style.animation='none'; void next.offsetWidth;
+  next.style.animation=(tr==='push'?(dir>0?'s-push':'s-pushback')+' .7s cubic-bezier(.2,.8,.2,1)':'s-fade .7s ease');
+  next.classList.add('active'); loadEmbeds(next,true);
+  cur=i;
+  document.getElementById('bar').style.width=((i+1)/slides.length*100)+'%';
+  document.getElementById('count').textContent=(i+1)+' / '+slides.length;
+  const n=document.getElementById('notes'); n.innerHTML='<b>Notes · slide '+(i+1)+'</b><br>'+(NOTES[i]||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  history.replaceState(null,'','#'+(i+1));
+  if(document.activeElement&&document.activeElement.tagName==='IFRAME')document.activeElement.blur();
+}
+const go=d=>show(cur+d,d);
+addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();go(1);}
+  else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(-1);}
+  else if(e.key==='Home')show(0,-1);
+  else if(e.key==='End')show(slides.length-1,1);
+  else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+  else if(e.key==='n'||e.key==='N')document.getElementById('notes').classList.toggle('on');
+});
+document.addEventListener('click',e=>{if(e.target.closest('#notes'))return;go(e.clientX<innerWidth*0.25?-1:1);});
+let tx=null;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(dx<0?1:-1);tx=null;});
+const start=parseInt(location.hash.slice(1))||1;
+show(start-1,1);
+setTimeout(()=>document.getElementById('hint').style.opacity=0,4000);
+</script>
+</body></html>
